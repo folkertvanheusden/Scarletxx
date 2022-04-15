@@ -25,6 +25,7 @@ public:
 	uct_node *pick_unvisited();
 	uct_node *traverse(uct_node *node);
 	uct_node *best_uct();
+	uct_node *best_child();
 
 	bool      fully_expanded();
 };

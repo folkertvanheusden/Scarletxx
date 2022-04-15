@@ -103,3 +103,20 @@ uct_node *uct_node::traverse(uct_node *node)
 
 	return node->pick_unvisited();
 }
+
+uct_node *uct_node::best_child()
+{
+	uct_node *best       = nullptr;
+	uint64_t  best_count = 0;
+
+	for(auto u : children) {
+		uint64_t count = u.second->get_visit_count();
+
+		if (count > best_count) {
+			best_count = count;
+			best = u.second;
+		}
+	}
+
+	return best;
+}
