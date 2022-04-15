@@ -61,3 +61,42 @@ uct_node *uct_node::pick_unvisited()
 
 	return new_node;
 }
+
+bool uct_node::fully_expanded()
+{
+	return unvisited == nullptr;
+}
+
+// TODO
+uct_node *uct_node::best_uct()
+{
+	uct_node *best       = nullptr;
+	uint64_t  best_score = 0;
+
+	for(auto u : children) {
+		uint64_t current_score = u.second->get_score();
+
+		if (current_score > best_score) {
+			best_score = current_score;
+			best = u.second;
+		}
+	}
+
+	return best;
+}
+
+uct_node *uct_node::traverse(uct_node *node)
+{
+	uct_node *last_best = nullptr;
+
+	while(node != nullptr && node->fully_expanded()) {
+		last_best = node;
+
+		node = node->best_uct();
+	}
+
+	if (node == nullptr)  // terminal node?
+		return last_best;
+
+	return node->pick_unvisited();
+}

@@ -23,4 +23,8 @@ public:
 	uint64_t  get_score();
 
 	uct_node *pick_unvisited();
+	uct_node *traverse(uct_node *node);
+	uct_node *best_uct();
+
+	bool      fully_expanded();
 };
