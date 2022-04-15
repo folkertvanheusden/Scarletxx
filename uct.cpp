@@ -38,7 +38,7 @@ uct_node *uct_node::add_child(const libataxx::Move & m)
 
 	uct_node *new_node = new uct_node(this, new_position, m);
 
-	children.insert({ m, new_node });
+	children.push_back({ m, new_node });
 
 	return new_node;
 }
@@ -81,6 +81,7 @@ uct_node *uct_node::pick_unvisited()
 
 uct_node *uct_node::pick_for_revisit()
 {
+	return children.at(random() % children.size()).second;
 }
 
 bool uct_node::fully_expanded()

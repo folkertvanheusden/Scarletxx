@@ -10,7 +10,7 @@ private:
 	const libataxx::Position *const position  { nullptr };
 	const libataxx::Move            causing_move;
 
-	std::map<libataxx::Move, uct_node *> children;
+	std::vector<std::pair<libataxx::Move, uct_node *> > children;
 	std::vector<libataxx::Move>    *unvisited { nullptr };
 	uint64_t                        visited   { 0 };
 	uint64_t                        score     { 0 };
@@ -26,6 +26,7 @@ public:
 	double    get_score();
 
 	uct_node *pick_unvisited();
+	uct_node *pick_for_revisit();
 	uct_node *traverse();
 	uct_node *best_uct();
 	uct_node *best_child();
