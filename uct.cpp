@@ -120,3 +120,21 @@ uct_node *uct_node::best_child()
 
 	return best;
 }
+
+void uct_node::update_stats(const int result)
+{
+	visited++;
+
+	score += result;
+}
+
+// can be made non-recursive
+void uct_node::backpropagate(uct_node *const node, const int result)
+{
+	if (!node)
+		return;
+
+	update_stats(result);
+
+	backpropagate(parent, result);
+}

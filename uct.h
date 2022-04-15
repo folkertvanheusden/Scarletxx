@@ -14,6 +14,7 @@ private:
 	uint64_t                        score     { 0 };
 
 	uct_node *add_child(const libataxx::Move & m);
+	void      update_stats(const int result);
 
 public:
 	uct_node(uct_node *const parent, const libataxx::Position *const position);
@@ -26,6 +27,7 @@ public:
 	uct_node *traverse(uct_node *node);
 	uct_node *best_uct();
 	uct_node *best_child();
+	void      backpropagate(uct_node *const node, const int result);
 
 	bool      fully_expanded();
 };
