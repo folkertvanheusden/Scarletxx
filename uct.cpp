@@ -6,6 +6,11 @@ uct_node::uct_node(uct_node *const parent, const libataxx::Position *const posit
 	causing_move(causing_move),
 	unvisited(new std::vector<libataxx::Move>(position->legal_moves()))
 {
+	if (unvisited->empty()) {
+		delete unvisited;
+
+		unvisited = nullptr;
+	}
 }
 
 uct_node::~uct_node()
