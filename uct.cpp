@@ -22,6 +22,8 @@ uct_node::~uct_node()
 
 	for(auto u : children)
 		delete u.second;
+
+	delete unvisited;
 }
 
 uct_node *uct_node::add_child(const libataxx::Move & m)
@@ -61,8 +63,6 @@ uct_node *uct_node::pick_unvisited()
 	if (unvisited == nullptr)
 		return nullptr;
 
-	printf("# unvisited: %zu\n", unvisited->size());
-
 	uct_node *new_node = add_child(unvisited->back());
 
 	unvisited->pop_back();
@@ -71,9 +71,6 @@ uct_node *uct_node::pick_unvisited()
 		delete unvisited;
 
 		unvisited = nullptr;
-	}
-	else {
-		printf("# unvisited: %zu, new node %p\n", unvisited->size(), new_node);
 	}
 
 	return new_node;
@@ -109,9 +106,7 @@ uct_node *uct_node::best_uct()
 
 uct_node *uct_node::traverse()
 {
-	uct_node *node      = this;
-
-	printf("traverse FE: %d\n", node->fully_expanded());
+	uct_node *node   = this;
 
 	while(node->fully_expanded()) {
 		uct_node *next = node->best_uct();
@@ -120,18 +115,12 @@ uct_node *uct_node::traverse()
 			break;
 
 		node = next;
-
-		printf("traverse it best_uct: %p\n", node);
 	}
 
-	printf("traverse na tree lopen: %p\n", node);
-
-	uct_node *chosen    = nullptr;
+	uct_node *chosen = nullptr;
 
 	if (node) {
 		chosen = node->pick_unvisited();
-
-		printf("traverse node: chosen %p\n", chosen);
 
 		if (!chosen)
 			chosen = node->pick_for_revisit();
@@ -147,6 +136,7 @@ uct_node *uct_node::best_child()
 
 	for(auto u : children) {
 		int64_t count = u.second->get_visit_count();
+		printf("%p %ld\n", this, count);
 
 		if (count > best_count) {
 			best_count = count;
@@ -174,6 +164,7 @@ void uct_node::backpropagate(uct_node *const leaf, const int result)
 	uct_node *node = leaf;
 
 	while(node) {
+		printf("bp: %p %p %d\n", leaf, node, result);
 		node->update_stats(result);
 
 		node = node->get_parent();
@@ -202,20 +193,14 @@ uct_node *uct_node::monte_carlo_tree_search()
 {
 	uct_node *leaf = traverse();
 
-	printf("monte_carlo_tree_search leaf: %p\n", leaf);
-
 	auto platout_terminal_position = playout(leaf);
 
 	int simulation_result = (platout_terminal_position.score() > 0 && leaf->get_position()->turn() == libataxx::Side::Black) ||
 				(platout_terminal_position.score() < 0 && leaf->get_position()->turn() == libataxx::Side::White) ? 1 : 0;
 
-	printf("monte_carlo_tree_search sim result: %d\n", simulation_result);
-
 	backpropagate(leaf, simulation_result);
 
 	uct_node *result = best_child();
-
-	printf("monte_carlo_tree_search best_child: %p\n", result);
 
 	return result;
 }

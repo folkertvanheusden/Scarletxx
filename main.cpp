@@ -3,28 +3,37 @@
 
 int main(int argc, char *argv[])
 {
-	uint64_t  start_ts = get_ms();
+	libataxx::Position p("startpos");
 
-	uint64_t  n_played = 0;
+	while(!p.gameover()) {
+		uint64_t  start_ts = get_ms();
 
-	uct_node *root = new uct_node(nullptr, new libataxx::Position("startpos"), libataxx::Move());
+		uint64_t  n_played = 0;
 
-	do {
-		uct_node *best = root->monte_carlo_tree_search();
+		uct_node *root = new uct_node(nullptr, new libataxx::Position(p), libataxx::Move());
 
-		if (best) {
-			std::string move = std::string(best->get_causing_move());
+		for(;;) {
+			uct_node *best = root->monte_carlo_tree_search();
 
-			printf("%s %lu %f\n", move.c_str(), best->get_visit_count(), best->get_score());
+			if (best) {
+				std::string move = std::string(best->get_causing_move());
+
+				printf("%s %lu %f\n", move.c_str(), best->get_visit_count(), best->get_score());
+			}
+
+			n_played++;
+
+			if (get_ms() - start_ts > 1000) {
+				p.makemove(best->get_causing_move());
+
+				break;
+			}
 		}
 
-		n_played++;
+		printf("# played: %lu\n", n_played);
+
+		delete root;
 	}
-	while(get_ms() - start_ts <= 1000);
-
-	printf("# played: %lu\n", n_played);
-
-	delete root;
 
 	return 0;
 }
