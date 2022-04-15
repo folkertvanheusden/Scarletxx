@@ -7,7 +7,7 @@ int main(int argc, char *argv[])
 
 	uint64_t  n_played = 0;
 
-	uct_node *root = new uct_node(nullptr, new libataxx::Position(), libataxx::Move());
+	uct_node *root = new uct_node(nullptr, new libataxx::Position("startpos"), libataxx::Move());
 
 	do {
 		uct_node *best = root->monte_carlo_tree_search();
@@ -19,6 +19,7 @@ int main(int argc, char *argv[])
 		}
 
 		n_played++;
+		break;
 	}
 	while(get_ms() - start_ts <= 1000);
 
