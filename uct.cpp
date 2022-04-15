@@ -164,15 +164,20 @@ void uct_node::update_stats(const int result)
 	score += result;
 }
 
-// can be made non-recursive
-void uct_node::backpropagate(uct_node *const node, const int result)
+uct_node *uct_node::get_parent()
 {
-	if (!node)
-		return;
+	return parent;
+}
 
-	update_stats(result);
+void uct_node::backpropagate(uct_node *const leaf, const int result)
+{
+	uct_node *node = leaf;
 
-	backpropagate(parent, result);
+	while(node) {
+		node->update_stats(result);
+
+		node = node->get_parent();
+	}
 }
 
 const libataxx::Position *uct_node::get_position() const

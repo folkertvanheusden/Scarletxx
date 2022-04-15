@@ -25,6 +25,7 @@ public:
 	uint64_t  get_visit_count();
 	double    get_score();
 
+	uct_node *get_parent();
 	uct_node *pick_unvisited();
 	uct_node *pick_for_revisit();
 	uct_node *traverse();
