@@ -1,4 +1,7 @@
+#include <cfloat>
+
 #include "uct.h"
+
 
 uct_node::uct_node(uct_node *const parent, const libataxx::Position *const position, const libataxx::Move & causing_move) :
 	parent(parent),
@@ -58,6 +61,8 @@ uct_node *uct_node::pick_unvisited()
 	if (unvisited == nullptr)
 		return nullptr;
 
+	printf("# unvisited: %zu\n", unvisited->size());
+
 	uct_node *new_node = add_child(unvisited->back());
 
 	unvisited->pop_back();
@@ -67,8 +72,15 @@ uct_node *uct_node::pick_unvisited()
 
 		unvisited = nullptr;
 	}
+	else {
+		printf("# unvisited: %zu, new node %p\n", unvisited->size(), new_node);
+	}
 
 	return new_node;
+}
+
+uct_node *uct_node::pick_for_revisit()
+{
 }
 
 bool uct_node::fully_expanded()
@@ -80,10 +92,11 @@ bool uct_node::fully_expanded()
 uct_node *uct_node::best_uct()
 {
 	uct_node *best       = nullptr;
-	double    best_score = 0;
+	double    best_score = -DBL_MAX;
 
 	for(auto u : children) {
-		uint64_t current_score = u.second->get_score();
+		double current_score = u.second->get_score();
+		printf("score: %f\n", current_score);
 
 		if (current_score > best_score) {
 			best_score = current_score;
@@ -97,27 +110,43 @@ uct_node *uct_node::best_uct()
 uct_node *uct_node::traverse()
 {
 	uct_node *node      = this;
-	uct_node *last_best = nullptr;
 
-	while(node != nullptr && node->fully_expanded()) {
-		last_best = node;
+	printf("traverse FE: %d\n", node->fully_expanded());
 
-		node = node->best_uct();
+	while(node->fully_expanded()) {
+		uct_node *next = node->best_uct();
+
+		if (!next)
+			break;
+
+		node = next;
+
+		printf("traverse it best_uct: %p\n", node);
 	}
 
-	if (node == nullptr)  // terminal node?
-		return last_best;
+	printf("traverse na tree lopen: %p\n", node);
 
-	return node->pick_unvisited();
+	uct_node *chosen    = nullptr;
+
+	if (node) {
+		chosen = node->pick_unvisited();
+
+		printf("traverse node: chosen %p\n", chosen);
+
+		if (!chosen)
+			chosen = node->pick_for_revisit();
+	}
+
+	return chosen;
 }
 
 uct_node *uct_node::best_child()
 {
 	uct_node *best       = nullptr;
-	uint64_t  best_count = 0;
+	int64_t  best_count = -1;
 
 	for(auto u : children) {
-		uint64_t count = u.second->get_visit_count();
+		int64_t count = u.second->get_visit_count();
 
 		if (count > best_count) {
 			best_count = count;
@@ -155,11 +184,19 @@ uct_node *uct_node::monte_carlo_tree_search()
 {
 	uct_node *leaf = traverse();
 
+	printf("monte_carlo_tree_search leaf: %p\n", leaf);
+
 	int simulation_result = leaf->get_position()->score() > 0;
 
+	printf("monte_carlo_tree_search sim result: %d\n", simulation_result);
+
 	backpropagate(leaf, simulation_result);
-		
-	return best_child();
+
+	uct_node *result = best_child();
+
+	printf("monte_carlo_tree_search best_child: %p\n", result);
+
+	return result;
 }
 
 const libataxx::Move uct_node::get_causing_move() const

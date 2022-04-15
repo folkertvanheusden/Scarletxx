@@ -19,11 +19,10 @@ int main(int argc, char *argv[])
 		}
 
 		n_played++;
-		break;
 	}
 	while(get_ms() - start_ts <= 1000);
 
-	printf("%lu\n", n_played);
+	printf("# played: %lu\n", n_played);
 
 	delete root;
 
