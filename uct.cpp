@@ -97,7 +97,6 @@ uct_node *uct_node::best_uct()
 
 	for(auto u : children) {
 		double current_score = u.second->get_score();
-		printf("score: %f\n", current_score);
 
 		if (current_score > best_score) {
 			best_score = current_score;
@@ -181,13 +180,29 @@ const libataxx::Position *uct_node::get_position() const
 	return position;
 }
 
+libataxx::Position uct_node::playout(const uct_node *const leaf)
+{
+	libataxx::Position position = *leaf->get_position();
+
+	while(!position.gameover()) {
+		auto moves = position.legal_moves();
+
+		position.makemove(moves.at(random() % moves.size()));
+	}
+
+	return position;
+}
+
 uct_node *uct_node::monte_carlo_tree_search()
 {
 	uct_node *leaf = traverse();
 
 	printf("monte_carlo_tree_search leaf: %p\n", leaf);
 
-	int simulation_result = leaf->get_position()->score() > 0;
+	auto platout_terminal_position = playout(leaf);
+
+	int simulation_result = (platout_terminal_position.score() > 0 && leaf->get_position()->turn() == libataxx::Side::Black) ||
+				(platout_terminal_position.score() < 0 && leaf->get_position()->turn() == libataxx::Side::White) ? 1 : 0;
 
 	printf("monte_carlo_tree_search sim result: %d\n", simulation_result);
 

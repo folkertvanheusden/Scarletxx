@@ -33,6 +33,7 @@ public:
 	void      backpropagate(uct_node *const node, const int result);
 	bool      fully_expanded();
 	uct_node *monte_carlo_tree_search();
+	libataxx::Position playout(const uct_node *const leaf);
 
 	const libataxx::Position *get_position() const;
 
