@@ -1,8 +1,9 @@
 #include "uct.h"
 
-uct_node::uct_node(uct_node *const parent, const libataxx::Position *const position) :
+uct_node::uct_node(uct_node *const parent, const libataxx::Position *const position, const libataxx::Move & causing_move) :
 	parent(parent),
 	position(position),
+	causing_move(causing_move),
 	unvisited(new std::vector<libataxx::Move>(position->legal_moves()))
 {
 }
@@ -27,7 +28,7 @@ uct_node *uct_node::add_child(const libataxx::Move & m)
 
 	new_position->makemove(m);
 
-	uct_node *new_node = new uct_node(this, new_position);
+	uct_node *new_node = new uct_node(this, new_position, m);
 
 	children.insert({ m, new_node });
 
@@ -88,8 +89,9 @@ uct_node *uct_node::best_uct()
 	return best;
 }
 
-uct_node *uct_node::traverse(uct_node *node)
+uct_node *uct_node::traverse()
 {
+	uct_node *node      = this;
 	uct_node *last_best = nullptr;
 
 	while(node != nullptr && node->fully_expanded()) {
@@ -137,4 +139,25 @@ void uct_node::backpropagate(uct_node *const node, const int result)
 	update_stats(result);
 
 	backpropagate(parent, result);
+}
+
+const libataxx::Position *uct_node::get_position() const
+{
+	return position;
+}
+
+uct_node *uct_node::monte_carlo_tree_search()
+{
+	uct_node *leaf = traverse();
+
+	int simulation_result = get_position()->score() > 0;
+
+	backpropagate(leaf, simulation_result);
+		
+	return best_child();
+}
+
+const libataxx::Move uct_node::get_causing_move() const
+{
+	return causing_move;
 }
