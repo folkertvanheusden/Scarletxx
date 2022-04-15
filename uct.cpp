@@ -155,7 +155,7 @@ uct_node *uct_node::monte_carlo_tree_search()
 {
 	uct_node *leaf = traverse();
 
-	int simulation_result = get_position()->score() > 0;
+	int simulation_result = leaf->get_position()->score() > 0;
 
 	backpropagate(leaf, simulation_result);
 		
