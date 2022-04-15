@@ -39,9 +39,12 @@ uint64_t uct_node::get_visit_count()
 	return visited;
 }
 
-uint64_t uct_node::get_score()
+double uct_node::get_score()
 {
-	return score;
+	if (visited == 0)
+		return -1;
+
+	return double(score) / visited;
 }
 
 uct_node *uct_node::pick_unvisited()
@@ -71,7 +74,7 @@ bool uct_node::fully_expanded()
 uct_node *uct_node::best_uct()
 {
 	uct_node *best       = nullptr;
-	uint64_t  best_score = 0;
+	double    best_score = 0;
 
 	for(auto u : children) {
 		uint64_t current_score = u.second->get_score();

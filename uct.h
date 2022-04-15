@@ -20,7 +20,7 @@ public:
 	virtual ~uct_node();
 
 	uint64_t  get_visit_count();
-	uint64_t  get_score();
+	double    get_score();
 
 	uct_node *pick_unvisited();
 	uct_node *traverse(uct_node *node);
