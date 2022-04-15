@@ -10,7 +10,13 @@ int main(int argc, char *argv[])
 	uct_node *root = new uct_node(nullptr, new libataxx::Position(), libataxx::Move());
 
 	do {
-		root->monte_carlo_tree_search();
+		uct_node *best = root->monte_carlo_tree_search();
+
+		if (best) {
+			std::string move = std::string(best->get_causing_move());
+
+			printf("%s %lu %f\n", move.c_str(), best->get_visit_count(), best->get_score());
+		}
 
 		n_played++;
 	}
