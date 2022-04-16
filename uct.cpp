@@ -196,11 +196,12 @@ libataxx::Position uct_node::playout(const uct_node *const leaf)
 		auto moves = position.legal_moves();
 
 		if (moves.empty())
-			break;
+			position.makemove(libataxx::Move::nullmove());
+		else {
+			std::uniform_int_distribution<> rng(0, moves.size() - 1);
 
-		std::uniform_int_distribution<> rng(0, moves.size() - 1);
-
-		position.makemove(moves.at(rng(gen)));
+			position.makemove(moves.at(rng(gen)));
+		}
 	}
 
 	return position;
