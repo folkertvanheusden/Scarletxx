@@ -19,14 +19,6 @@ private:
 
 	uct_node *add_child(const libataxx::Move & m);
 	void      update_stats(const int result);
-
-public:
-	uct_node(uct_node *const parent, const libataxx::Position *const position, const libataxx::Move & causing_move);
-	virtual ~uct_node();
-
-	uint64_t  get_visit_count();
-	double    get_score();
-
 	uct_node *get_parent();
 	uct_node *pick_unvisited();
 	uct_node *pick_for_revisit();
@@ -35,10 +27,16 @@ public:
 	uct_node *best_child();
 	void      backpropagate(uct_node *const node, const int result);
 	bool      fully_expanded();
-	uct_node *monte_carlo_tree_search();
-	libataxx::Position playout(const uct_node *const leaf);
-
+	libataxx::Position        playout(const uct_node *const leaf);
 	const libataxx::Position *get_position() const;
+	uint64_t  get_visit_count();
+	double    get_score();
+
+public:
+	uct_node(uct_node *const parent, const libataxx::Position *const position, const libataxx::Move & causing_move);
+	virtual ~uct_node();
+
+	uct_node *monte_carlo_tree_search();
 
 	const libataxx::Move get_causing_move() const;
 };
