@@ -44,12 +44,16 @@ std::vector<std::string> split(const std::string & in_in, const std::string & sp
 
 libataxx::Move calculate_move(const libataxx::Position & p, const unsigned think_time)
 {
-	uct_node *root = new uct_node(nullptr, new libataxx::Position(p), libataxx::Move());
+	uct_node *root     = new uct_node(nullptr, new libataxx::Position(p), libataxx::Move());
 
 	uint64_t  start_ts = get_ms();
 
+	uint64_t  n_played = 0;
+
 	for(;;) {
 		uct_node *best = root->monte_carlo_tree_search();
+
+		n_played++;
 
 		if (get_ms() - start_ts >= think_time) {
 
@@ -64,6 +68,8 @@ libataxx::Move calculate_move(const libataxx::Position & p, const unsigned think
 			}
 
 			delete root;
+
+			fprintf(stderr, "# n played/s: %.2f\n", n_played * 1000.0 / think_time);
 
 			return move;
 		}
