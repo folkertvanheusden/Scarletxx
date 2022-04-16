@@ -78,6 +78,9 @@ uct_node *uct_node::pick_unvisited()
 
 uct_node *uct_node::pick_for_revisit()
 {
+	if (children.empty())
+		return nullptr;
+
 	return children.at(random() % children.size()).second;
 }
 
@@ -136,7 +139,6 @@ uct_node *uct_node::best_child()
 
 	for(auto u : children) {
 		int64_t count = u.second->get_visit_count();
-		printf("%p %ld\n", this, count);
 
 		if (count > best_count) {
 			best_count = count;
@@ -164,7 +166,6 @@ void uct_node::backpropagate(uct_node *const leaf, const int result)
 	uct_node *node = leaf;
 
 	while(node) {
-		printf("bp: %p %p %d\n", leaf, node, result);
 		node->update_stats(result);
 
 		node = node->get_parent();
@@ -192,6 +193,8 @@ libataxx::Position uct_node::playout(const uct_node *const leaf)
 uct_node *uct_node::monte_carlo_tree_search()
 {
 	uct_node *leaf = traverse();
+	if (!leaf)
+		return nullptr;
 
 	auto platout_terminal_position = playout(leaf);
 
