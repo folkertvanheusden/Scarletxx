@@ -9,10 +9,10 @@ int main(int argc, char *argv[])
 {
 	libataxx::Position p("startpos");
 
-	bool repetition = false;
+	bool repetition_termination = false;
 	std::set<uint64_t> history;
 
-	while(!p.gameover() && !repetition) {
+	while(!p.gameover() && !repetition_termination) {
 		uint64_t  start_ts = get_ms();
 
 		uint64_t  n_played = 0;
@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
 
 				uint64_t cur_hash = p.hash();
 
-				repetition = history.find(cur_hash) != history.end();
+				repetition_termination = history.find(cur_hash) != history.end() && p.count_moves() == 1;
 
 				history.insert(cur_hash);
 
