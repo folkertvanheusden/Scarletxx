@@ -6,5 +6,6 @@ It also competes at http://server.ataxx.org/
 
 
 
-written in 2022, Folkert van Heusden
+written in 2022 by Folkert van Heusden <mail@vanheusden.com>
+
 released in the public domain
