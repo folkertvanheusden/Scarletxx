@@ -56,10 +56,15 @@ uint64_t uct_node::get_visit_count()
 
 double uct_node::get_score()
 {
-	if (visited == 0)
-		return -1;
+	double UCTj = 0.;
 
-	return double(score) / visited;
+	if (visited)
+		UCTj += double(score) / visited;
+
+	if (parent) 
+		UCTj += sqrt(2.0) * sqrt(log(visited) / parent->get_visit_count());
+
+	return UCTj;
 }
 
 uct_node *uct_node::pick_unvisited()
