@@ -63,8 +63,11 @@ double uct_node::get_score()
 	if (visited)
 		UCTj += double(score) / visited;
 
-	if (parent) 
-		UCTj += sqrt(2.0) * sqrt(log(parent->get_visit_count()) / visited);
+	if (parent) {
+		constexpr double sqrt_2 = sqrt(2.0);
+
+		UCTj += sqrt_2 * sqrt(log(parent->get_visit_count()) / visited);
+	}
 
 	return UCTj;
 }
