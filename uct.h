@@ -1,4 +1,5 @@
 #include <map>
+#include <random>
 
 #include "libataxx/src/libataxx/position.hpp"
 
@@ -14,6 +15,9 @@ private:
 	std::vector<libataxx::Move>    *unvisited { nullptr };
 	uint64_t                        visited   { 0 };
 	uint64_t                        score     { 0 };
+
+	std::random_device              rd;
+	std::mt19937_64                 gen       { rd() };
 
 	uct_node *add_child(const libataxx::Move & m);
 	void      update_stats(const int result);

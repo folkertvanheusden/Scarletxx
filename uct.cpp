@@ -81,7 +81,9 @@ uct_node *uct_node::pick_for_revisit()
 	if (children.empty())
 		return nullptr;
 
-	return children.at(random() % children.size()).second;
+	std::uniform_int_distribution<> rng(0, children.size() - 1);
+
+	return children.at(rng(gen)).second;
 }
 
 bool uct_node::fully_expanded()
@@ -184,7 +186,12 @@ libataxx::Position uct_node::playout(const uct_node *const leaf)
 	while(!position.gameover()) {
 		auto moves = position.legal_moves();
 
-		position.makemove(moves.at(random() % moves.size()));
+		if (moves.empty())
+			break;
+
+		std::uniform_int_distribution<> rng(0, moves.size() - 1);
+
+		position.makemove(moves.at(rng(gen)));
 	}
 
 	return position;
