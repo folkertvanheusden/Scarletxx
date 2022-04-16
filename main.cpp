@@ -175,6 +175,10 @@ int main(int argc, char **argv)
 					think_time = limit_duration_min;
 			}
 
+			// 50ms overhead
+			if (think_time > 50)
+				think_time -= 50;
+
 			libataxx::Move move = calculate_move(pos, think_time);
 
 			std::cout << "bestmove " << move << std::endl;
