@@ -1,3 +1,5 @@
+// written by folkert van heusden <mail@vanheusden.com>
+// this code is public domain
 #include <map>
 
 #include "libataxx/src/libataxx/position.hpp"
