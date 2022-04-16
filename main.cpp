@@ -65,26 +65,28 @@ libataxx::Move calculate_move_helper(const uint64_t start_ts, const libataxx::Po
 	}
 }
 
-libataxx::Move calculate_move(const libataxx::Position & p, const unsigned think_time)
+libataxx::Move calculate_move(const libataxx::Position & p, const unsigned think_time, const int n_threads)
 {
 	uint64_t  start_ts = get_ms();
 
 	uct_node *root = new uct_node(nullptr, new libataxx::Position(p), libataxx::Move());
 
-	std::thread *threads[5] { nullptr };
+	std::thread **threads = new std::thread *[n_threads];
 
 	unsigned thread_think_time = think_time > 5 ? think_time - 5 : 1;
 
-	for(int i=0; i<5; i++)
+	for(int i=0; i<n_threads; i++)
 		threads[i] = new std::thread([start_ts, p, root, thread_think_time]{ calculate_move_helper(start_ts, p, root, thread_think_time); });
 
 	auto move = calculate_move_helper(start_ts, p, root, think_time);
 
-	for(int i=0; i<5; i++) {
+	for(int i=0; i<n_threads; i++) {
 		threads[i]->join();
 
 		delete threads[i];
 	}
+
+	delete [] threads;
 
 	delete root;
 
@@ -202,7 +204,7 @@ int main(int argc, char **argv)
 			if (think_time > 50)
 				think_time -= 50;
 
-			libataxx::Move move = calculate_move(pos, think_time);
+			libataxx::Move move = calculate_move(pos, think_time, 4);
 
 			std::cout << "bestmove " << move << std::endl;
 		}
