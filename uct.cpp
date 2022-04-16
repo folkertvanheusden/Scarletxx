@@ -2,6 +2,7 @@
 // this code is public domain
 #include <cfloat>
 #include <random>
+#include <mutex>
 
 #include "uct.h"
 
@@ -58,13 +59,15 @@ uint64_t uct_node::get_visit_count()
 
 double uct_node::get_score()
 {
+	uint64_t parent_count = parent->get_visit_count();
+
 	double UCTj = 0.;
 
 	if (visited)
 		UCTj += double(score) / visited;
 
 	if (parent) 
-		UCTj += sqrt(2.0) * sqrt(log(parent->get_visit_count()) / visited);
+		UCTj += sqrt(2.0) * sqrt(log(parent_count) / visited);
 
 	return UCTj;
 }
@@ -102,9 +105,10 @@ bool uct_node::fully_expanded()
 	return unvisited == nullptr;
 }
 
-// TODO
 uct_node *uct_node::best_uct()
 {
+	std::shared_lock lck(lock);
+
 	uct_node *best       = nullptr;
 	double    best_score = -DBL_MAX;
 
@@ -136,10 +140,17 @@ uct_node *uct_node::traverse()
 	uct_node *chosen = nullptr;
 
 	if (node) {
-		chosen = node->pick_unvisited();
+		{
+			std::unique_lock lck(lock);
 
-		if (!chosen)
+			chosen = node->pick_unvisited();
+		}
+
+		if (!chosen) {
+			std::shared_lock lck(lock);
+
 			chosen = node->pick_for_revisit();
+		}
 	}
 
 	return chosen;
@@ -147,6 +158,8 @@ uct_node *uct_node::traverse()
 
 uct_node *uct_node::best_child()
 {
+	std::shared_lock lck(lock);
+
 	uct_node *best       = nullptr;
 	int64_t  best_count = -1;
 

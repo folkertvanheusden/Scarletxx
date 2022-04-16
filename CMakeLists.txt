@@ -20,4 +20,9 @@ add_executable(
   uct.cpp
 )
 
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+find_package(Threads)
+target_link_libraries(scarlettxx Threads::Threads)
+
 target_link_libraries(scarlettxx ataxx)

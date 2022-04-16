@@ -4,6 +4,7 @@
 #include <set>
 #include <string>
 #include <string.h>
+#include <thread>
 #include <vector>
 
 #include "time.h"
@@ -42,12 +43,8 @@ std::vector<std::string> split(const std::string & in_in, const std::string & sp
 	return out;
 }
 
-libataxx::Move calculate_move(const libataxx::Position & p, const unsigned think_time)
+libataxx::Move calculate_move_helper(const uint64_t start_ts, const libataxx::Position & p, uct_node *const root, const unsigned think_time)
 {
-	uct_node *root = new uct_node(nullptr, new libataxx::Position(p), libataxx::Move());
-
-	uint64_t  start_ts = get_ms();
-
 	for(;;) {
 		uct_node *best = root->monte_carlo_tree_search();
 
@@ -63,11 +60,35 @@ libataxx::Move calculate_move(const libataxx::Position & p, const unsigned think
 				move = moves.at(random() % moves.size());
 			}
 
-			delete root;
-
 			return move;
 		}
 	}
+}
+
+libataxx::Move calculate_move(const libataxx::Position & p, const unsigned think_time)
+{
+	uint64_t  start_ts = get_ms();
+
+	uct_node *root = new uct_node(nullptr, new libataxx::Position(p), libataxx::Move());
+
+	std::thread *threads[5] { nullptr };
+
+	unsigned thread_think_time = think_time > 5 ? think_time - 5 : 1;
+
+	for(int i=0; i<5; i++)
+		threads[i] = new std::thread([start_ts, p, root, thread_think_time]{ calculate_move_helper(start_ts, p, root, thread_think_time); });
+
+	auto move = calculate_move_helper(start_ts, p, root, think_time);
+
+	for(int i=0; i<5; i++) {
+		threads[i]->join();
+
+		delete threads[i];
+	}
+
+	delete root;
+
+	return move;
 }
 
 int main(int argc, char **argv)
