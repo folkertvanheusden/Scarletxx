@@ -1,7 +1,11 @@
 #include <cfloat>
+#include <random>
 
 #include "uct.h"
 
+
+std::random_device rd;
+std::mt19937_64    gen { rd() };
 
 uct_node::uct_node(uct_node *const parent, const libataxx::Position *const position, const libataxx::Move & causing_move) :
 	parent(parent),
