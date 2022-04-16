@@ -102,6 +102,8 @@ uct_node *uct_node::pick_for_revisit()
 
 bool uct_node::fully_expanded()
 {
+	std::shared_lock lck(lock);
+
 	return unvisited == nullptr;
 }
 
