@@ -101,7 +101,7 @@ libataxx::Move calculate_move(const libataxx::Position & p, const unsigned think
 
 	n_played += result.second;
 
-	fprintf(stderr, "# n played: %lu\n", n_played.load());
+	fprintf(stderr, "# n played per second: %.2f\n", n_played.load() / double(think_time));
 
 	return result.first;
 }
