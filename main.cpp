@@ -108,11 +108,13 @@ libataxx::Move calculate_move(const libataxx::Position & p, const unsigned think
 				// compare moves
 				if (pair0.first == pairn.first) {
 					// update counters
-					root[0]->update_stats(pairn.second->get_visit_count(), pairn.second->get_score_count());
+					pair0.second->update_stats(pairn.second->get_visit_count(), pairn.second->get_score_count());
 					break;
 				}
 			}
 		}
+
+		root[0]->update_stats(root[i]->get_visit_count(), root[i]->get_score_count());
 	}
 
 	auto mc_result  = root[0]->monte_carlo_tree_search();
@@ -159,7 +161,7 @@ int main(int argc, char **argv)
 			continue;
 
 		if (parts.at(0) == "uai") {
-			printf("id name Scarletxx %s\n", "0.005alpha");
+			printf("id name Scarletxx %s\n", "79664a3");
 			printf("id author Folkert van Heusden\n");
 			printf("uaiok\n");
 		}
@@ -247,7 +249,8 @@ int main(int argc, char **argv)
 					think_time = limit_duration_min;
 			}
 
-			libataxx::Move move = calculate_move(pos, think_time, 11);
+
+			libataxx::Move move = calculate_move(pos, think_time, 25);
 
 			std::cout << "bestmove " << move << std::endl;
 		}
