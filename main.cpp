@@ -78,15 +78,17 @@ libataxx::Move calculate_move(const libataxx::Position & p, const unsigned think
 
 	std::thread **threads         = new std::thread *[n_threads];
 
-	unsigned thread_think_time    = think_time > 100 ? think_time - 100 : 1;
+	unsigned thread_think_time    = think_time > 50 ? think_time - 50 : 1;
 
 	std::atomic_uint64_t n_played = 0;
 
 	for(int i=0; i<n_threads; i++) {
 		root[i] = new uct_node(nullptr, new libataxx::Position(p), libataxx::Move());
 
-		threads[i] = new std::thread([start_ts, p, root, i, thread_think_time, &n_played] {
-				n_played += calculate_move_helper(start_ts, p, root[i], thread_think_time).second;
+		unsigned cur_think_time = i ? thread_think_time : think_time;
+
+		threads[i] = new std::thread([start_ts, p, root, i, cur_think_time, &n_played] {
+				n_played += calculate_move_helper(start_ts, p, root[i], cur_think_time).second;
 				});
 	}
 
@@ -113,13 +115,17 @@ libataxx::Move calculate_move(const libataxx::Position & p, const unsigned think
 		}
 	}
 
-	auto mc_result = root[0]->monte_carlo_tree_search();
+	auto mc_result  = root[0]->monte_carlo_tree_search();
 
-	auto m_result  = mc_result->get_causing_move();
+	auto m_result   = mc_result->get_causing_move();
+
+	uint64_t end_ts = get_ms();
 
 	n_played++;
 
-	fprintf(stderr, "# n played per second: %.2f\n", n_played.load() * 1000.0 / think_time);
+	uint64_t t_diff = end_ts - start_ts;
+
+	fprintf(stderr, "# n played per second: %.2f (%ld ms)\n", n_played.load() * 1000.0 / t_diff, t_diff);
 
 	for(int i=0; i<n_threads; i++) {
 		delete root[i];
@@ -240,10 +246,6 @@ int main(int argc, char **argv)
 				if (think_time > limit_duration_min)
 					think_time = limit_duration_min;
 			}
-
-			// 50ms overhead
-			if (think_time > 50)
-				think_time -= 50;
 
 			libataxx::Move move = calculate_move(pos, think_time, 11);
 
