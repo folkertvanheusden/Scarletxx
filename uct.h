@@ -9,8 +9,6 @@
 class uct_node
 {
 private:
-	mutable std::shared_mutex       lock;
-
 	uct_node                 *const parent    { nullptr };
 	const libataxx::Position *const position  { nullptr };
 	const libataxx::Move            causing_move;
@@ -32,7 +30,6 @@ private:
 	void      backpropagate(uct_node *const node, const int result);
 	bool      fully_expanded();
 	double    get_score();
-	uint64_t  get_visit_count();
 	libataxx::Position playout(const uct_node *const leaf);
 
 public:
@@ -44,4 +41,9 @@ public:
 	const libataxx::Position *get_position() const;
 
 	const libataxx::Move get_causing_move() const;
+
+	const std::vector<std::pair<libataxx::Move, uct_node *> > & get_children() const;
+	void      update_stats(const uint64_t visited, const uint64_t score);
+	uint64_t  get_visit_count();
+	uint64_t  get_score_count();
 };

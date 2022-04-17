@@ -57,6 +57,17 @@ uint64_t uct_node::get_visit_count()
 	return visited;
 }
 
+uint64_t uct_node::get_score_count()
+{
+	return score;
+}
+
+void uct_node::update_stats(const uint64_t visited, const uint64_t score)
+{
+	this->visited += visited;
+	this->score   += score;
+}
+
 double uct_node::get_score()
 {
 	uint64_t parent_count = parent->get_visit_count();
@@ -102,15 +113,11 @@ uct_node *uct_node::pick_for_revisit()
 
 bool uct_node::fully_expanded()
 {
-	std::shared_lock lck(lock);
-
 	return unvisited == nullptr;
 }
 
 uct_node *uct_node::best_uct()
 {
-	std::shared_lock lck(lock);
-
 	uct_node *best       = nullptr;
 	double    best_score = -DBL_MAX;
 
@@ -142,17 +149,10 @@ uct_node *uct_node::traverse()
 	uct_node *chosen = nullptr;
 
 	if (node) {
-		{
-			std::unique_lock lck(lock);
+		chosen = node->pick_unvisited();
 
-			chosen = node->pick_unvisited();
-		}
-
-		if (!chosen) {
-			std::shared_lock lck(lock);
-
+		if (!chosen)
 			chosen = node->pick_for_revisit();
-		}
 	}
 
 	return chosen;
@@ -160,8 +160,6 @@ uct_node *uct_node::traverse()
 
 uct_node *uct_node::best_child()
 {
-	std::shared_lock lck(lock);
-
 	uct_node *best       = nullptr;
 	int64_t  best_count = -1;
 
@@ -245,4 +243,9 @@ uct_node *uct_node::monte_carlo_tree_search()
 const libataxx::Move uct_node::get_causing_move() const
 {
 	return causing_move;
+}
+
+const std::vector<std::pair<libataxx::Move, uct_node *> > & uct_node::get_children() const
+{
+	return children;
 }
