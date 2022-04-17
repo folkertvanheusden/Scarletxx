@@ -78,7 +78,7 @@ libataxx::Move calculate_move(const libataxx::Position & p, const unsigned think
 
 	std::thread **threads         = new std::thread *[n_threads];
 
-	unsigned thread_think_time    = think_time > 50 ? think_time - 50 : 1;
+	unsigned thread_think_time    = think_time > 5 ? think_time - 5 : 1;
 
 	std::atomic_uint64_t n_played = 0;
 
@@ -150,6 +150,8 @@ int main(int argc, char **argv)
 		char buffer[65536];
 		if (!fgets(buffer, sizeof buffer, stdin))
 			break;
+
+		fprintf(stderr, "|%s|\n", buffer);
 
 		char *lf = strchr(buffer, '\n');
 		if (lf)
@@ -263,7 +265,7 @@ int main(int argc, char **argv)
 			std::cout << "Invalid command: " << buffer << std::endl;
 		}
 
-		fflush(NULL);
+		fflush(nullptr);
 	}
 
 	return 0;
