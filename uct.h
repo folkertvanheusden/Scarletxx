@@ -26,7 +26,6 @@ private:
 	uct_node *pick_for_revisit();
 	uct_node *traverse();
 	uct_node *best_uct();
-	uct_node *best_child();
 	void      backpropagate(uct_node *const node, const int result);
 	bool      fully_expanded();
 	double    get_score();
@@ -39,6 +38,8 @@ public:
 	uct_node *monte_carlo_tree_search();
 
 	const libataxx::Position *get_position() const;
+
+	uct_node *best_child() const;
 
 	const libataxx::Move get_causing_move() const;
 

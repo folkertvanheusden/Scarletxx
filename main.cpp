@@ -117,9 +117,7 @@ libataxx::Move calculate_move(const libataxx::Position & p, const unsigned think
 		root[0]->update_stats(root[i]->get_visit_count(), root[i]->get_score_count());
 	}
 
-	auto mc_result  = root[0]->monte_carlo_tree_search();
-
-	auto m_result   = mc_result->get_causing_move();
+	auto m_result   = root[0]->best_child()->get_causing_move();
 
 	uint64_t end_ts = get_ms();
 
@@ -150,8 +148,6 @@ int main(int argc, char **argv)
 		char buffer[65536];
 		if (!fgets(buffer, sizeof buffer, stdin))
 			break;
-
-		fprintf(stderr, "|%s|\n", buffer);
 
 		char *lf = strchr(buffer, '\n');
 		if (lf)

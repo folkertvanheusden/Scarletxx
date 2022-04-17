@@ -158,7 +158,7 @@ uct_node *uct_node::traverse()
 	return chosen;
 }
 
-uct_node *uct_node::best_child()
+uct_node *uct_node::best_child() const
 {
 	uct_node *best       = nullptr;
 	int64_t  best_count = -1;
