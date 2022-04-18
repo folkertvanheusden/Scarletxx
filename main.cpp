@@ -159,7 +159,7 @@ int main(int argc, char **argv)
 			continue;
 
 		if (parts.at(0) == "uai") {
-			printf("id name Scarletxx %s\n", "79664a3");
+			printf("id name Scarletxx %s\n", "781020d");
 			printf("id author Folkert van Heusden\n");
 			printf("uaiok\n");
 		}
@@ -248,7 +248,7 @@ int main(int argc, char **argv)
 			}
 
 
-			libataxx::Move move = calculate_move(pos, think_time, 25);
+			libataxx::Move move = calculate_move(pos, think_time, 31);
 
 			std::cout << "bestmove " << move << std::endl;
 		}
