@@ -70,15 +70,14 @@ void uct_node::update_stats(const uint64_t visited, const uint64_t score)
 
 double uct_node::get_score()
 {
-	uint64_t parent_count = parent->get_visit_count();
+	if (visited == 0)
+		return -1.;
 
-	double UCTj = 0.;
+	double UCTj = double(score) / visited;
 
-	if (visited)
-		UCTj += double(score) / visited;
+	constexpr double sqrt_2 = sqrt(2.0);
 
-	if (parent) 
-		UCTj += sqrt(2.0) * sqrt(log(parent_count) / visited);
+	UCTj += sqrt_2 * sqrt(log(parent->get_visit_count()) / visited);
 
 	return UCTj;
 }
