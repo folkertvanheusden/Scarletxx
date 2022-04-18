@@ -8,7 +8,8 @@
 #include "uct.h"
 
 
-auto produce_seed() {
+auto produce_seed()
+{
 	std::vector<unsigned int> random_data(std::mt19937::state_size);
 
 	std::random_device source;
