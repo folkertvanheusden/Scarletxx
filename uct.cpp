@@ -27,11 +27,6 @@ uct_node::uct_node(uct_node *const parent, const libataxx::Position *const posit
 	causing_move(causing_move),
 	unvisited(new std::vector<libataxx::Move>(position->legal_moves()))
 {
-	if (unvisited->empty()) {
-		delete unvisited;
-
-		unvisited = nullptr;
-	}
 }
 
 uct_node::~uct_node()
@@ -220,13 +215,9 @@ libataxx::Position uct_node::playout(const uct_node *const leaf)
 	while(!position.gameover()) {
 		auto moves = position.legal_moves();
 
-		if (moves.empty())
-			position.makemove(libataxx::Move::nullmove());
-		else {
-			std::uniform_int_distribution<> rng(0, moves.size() - 1);
+		std::uniform_int_distribution<> rng(0, moves.size() - 1);
 
-			position.makemove(moves.at(rng(gen)));
-		}
+		position.makemove(moves.at(rng(gen)));
 	}
 
 	return position;
