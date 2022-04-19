@@ -232,7 +232,10 @@ uct_node *uct_node::monte_carlo_tree_search()
 	auto platout_terminal_position = playout(leaf);
 
 	int simulation_result = (platout_terminal_position.score() > 0 && position->turn() == libataxx::Side::Black) ||
-				(platout_terminal_position.score() < 0 && position->turn() == libataxx::Side::White) ? 1 : 0;
+				(platout_terminal_position.score() < 0 && position->turn() == libataxx::Side::White) ? 2 : 0;
+
+	if (platout_terminal_position.score() == 0)
+		simulation_result = 1;
 
 	backpropagate(leaf, simulation_result);
 
