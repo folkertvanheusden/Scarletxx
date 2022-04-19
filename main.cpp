@@ -125,7 +125,7 @@ libataxx::Move calculate_move(const libataxx::Position & p, const unsigned think
 
 	uint64_t t_diff = end_ts - start_ts;
 
-	fprintf(stderr, "# n played per second: %.2f (%ld ms)\n", n_played.load() * 1000.0 / t_diff, t_diff);
+	fprintf(stderr, "# n played per second: %.2f (%ld total, %ld ms)\n", n_played.load() * 1000.0 / t_diff, n_played.load(), t_diff);
 
 	for(int i=0; i<n_threads; i++) {
 		delete root[i];
