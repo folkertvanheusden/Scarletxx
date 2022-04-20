@@ -106,16 +106,6 @@ uct_node *uct_node::pick_unvisited()
 	return new_node;
 }
 
-uct_node *uct_node::pick_for_revisit()
-{
-	if (children.empty())
-		return nullptr;
-
-	std::uniform_int_distribution<> rng(0, children.size() - 1);
-
-	return children.at(rng(gen)).second;
-}
-
 bool uct_node::fully_expanded()
 {
 	return unvisited == nullptr;
@@ -153,12 +143,8 @@ uct_node *uct_node::traverse()
 
 	uct_node *chosen = nullptr;
 
-	if (node && node->get_position()->gameover() == false) {
+	if (node && node->get_position()->gameover() == false)
 		chosen = node->pick_unvisited();
-
-		if (!chosen)
-			chosen = node->pick_for_revisit();
-	}
 
 	return chosen;
 }
