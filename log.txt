@@ -37,3 +37,7 @@ def backpropagate(node, result):
 def best_child(node):
 	pick child with highest number of visits
 
+
+20-4-2022
+---------
+position fen 7/7/6o/2x3o/7/7/o5x x 0 3
