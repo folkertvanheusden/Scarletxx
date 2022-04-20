@@ -196,11 +196,12 @@ void uct_node::backpropagate(uct_node *const leaf, const int result)
 {
 	uct_node *node = leaf;
 
-	while(node) {
+	do {
 		node->update_stats(result);
 
 		node = node->get_parent();
 	}
+	while(node);
 }
 
 const libataxx::Position *uct_node::get_position() const
