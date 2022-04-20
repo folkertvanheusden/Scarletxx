@@ -106,16 +106,6 @@ uct_node *uct_node::pick_unvisited()
 	return new_node;
 }
 
-uct_node *uct_node::pick_for_revisit()
-{
-	if (children.empty())
-		return nullptr;
-
-	std::uniform_int_distribution<> rng(0, children.size() - 1);
-
-	return children.at(rng(gen)).second;
-}
-
 bool uct_node::fully_expanded()
 {
 	return unvisited == nullptr;
@@ -153,12 +143,8 @@ uct_node *uct_node::traverse()
 
 	uct_node *chosen = nullptr;
 
-	if (node && node->get_position()->gameover() == false) {
+	if (node && node->get_position()->gameover() == false)
 		chosen = node->pick_unvisited();
-
-		if (!chosen)
-			chosen = node->pick_for_revisit();
-	}
 
 	return chosen;
 }
@@ -196,11 +182,12 @@ void uct_node::backpropagate(uct_node *const leaf, const int result)
 {
 	uct_node *node = leaf;
 
-	while(node) {
+	do {
 		node->update_stats(result);
 
 		node = node->get_parent();
 	}
+	while(node);
 }
 
 const libataxx::Position *uct_node::get_position() const
@@ -231,10 +218,14 @@ uct_node *uct_node::monte_carlo_tree_search()
 
 	auto platout_terminal_position = playout(leaf);
 
-	int simulation_result = (platout_terminal_position.score() > 0 && position->turn() == libataxx::Side::Black) ||
-				(platout_terminal_position.score() < 0 && position->turn() == libataxx::Side::White) ? 2 : 0;
+	int score = platout_terminal_position.score();
 
-	if (platout_terminal_position.score() == 0)
+	libataxx::Side side = position->turn();
+
+	int simulation_result = (score > 0 && side == libataxx::Side::Black) ||
+				(score < 0 && side == libataxx::Side::White) ? 2 : 0;
+
+	if (score == 0)
 		simulation_result = 1;
 
 	backpropagate(leaf, simulation_result);
