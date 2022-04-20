@@ -68,7 +68,7 @@ uint64_t uct_node::get_score_count()
 	return score;
 }
 
-void uct_node::update_stats(const uint64_t visited, const uint64_t score)
+void uct_node::update_stats(const uint64_t visited, const double score)
 {
 	this->visited += visited;
 	this->score   += score;
@@ -79,7 +79,7 @@ double uct_node::get_score()
 	if (visited == 0)
 		return -1.;
 
-	double UCTj = double(score) / visited;
+	double UCTj = score / visited;
 
 	constexpr double sqrt_2 = sqrt(2.0);
 
@@ -192,7 +192,7 @@ uct_node *uct_node::get_parent()
 	return parent;
 }
 
-void uct_node::backpropagate(uct_node *const leaf, const int result)
+void uct_node::backpropagate(uct_node *const leaf, const double result)
 {
 	uct_node *node = leaf;
 
@@ -209,41 +209,26 @@ const libataxx::Position *uct_node::get_position() const
 	return position;
 }
 
-libataxx::Position uct_node::playout(const uct_node *const leaf)
-{
-	libataxx::Position position = *leaf->get_position();
-
-	while(!position.gameover()) {
-		auto moves = position.legal_moves();
-
-		std::uniform_int_distribution<> rng(0, moves.size() - 1);
-
-		position.makemove(moves.at(rng(gen)));
-	}
-
-	return position;
-}
-
 uct_node *uct_node::monte_carlo_tree_search()
 {
 	uct_node *leaf = traverse();
 	if (!leaf)
 		return nullptr;
 
-	auto platout_terminal_position = playout(leaf);
+	auto position = leaf->get_position();
 
-	int score = platout_terminal_position.score();
+	libataxx::Side side_me = position->turn();
 
-	libataxx::Side side = position->turn();
+	int score = position->score();
 
-	int simulation_result = (score > 0 && side == libataxx::Side::Black) ||
-				(score < 0 && side == libataxx::Side::White) ? 1 : 0;
+	if (position->turn() != side_me)
+		score = -score;
+
+	double simulation_result = ((score / double(7 * 7)) + 1.0) / 2.0;
 
 	backpropagate(leaf, simulation_result);
 
-	uct_node *result = best_child();
-
-	return result;
+	return best_child();
 }
 
 const libataxx::Move uct_node::get_causing_move() const
