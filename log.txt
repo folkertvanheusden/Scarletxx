@@ -40,4 +40,8 @@ def best_child(node):
 
 20-4-2022
 ---------
-position fen 7/7/6o/2x3o/7/7/o5x x 0 3
+- crash in position fen 7/7/6o/2x3o/7/7/o5x x 0 3
+
+- playout: zie idee van twipply over een sigma-functie ipv een playout
+
+- playout: eerst alleen capture en daarna ook gewone moves in een playout
