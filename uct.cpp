@@ -63,12 +63,12 @@ uint64_t uct_node::get_visit_count()
 	return visited;
 }
 
-uint64_t uct_node::get_score_count()
+double uct_node::get_score_count()
 {
 	return score;
 }
 
-void uct_node::update_stats(const uint64_t visited, const uint64_t score)
+void uct_node::update_stats(const uint64_t visited, const double score)
 {
 	this->visited += visited;
 	this->score   += score;
@@ -79,7 +79,7 @@ double uct_node::get_score()
 	if (visited == 0)
 		return -1.;
 
-	double UCTj = double(score) / visited;
+	double UCTj = score / visited;
 
 	constexpr double sqrt_2 = sqrt(2.0);
 
@@ -166,13 +166,6 @@ uct_node *uct_node::best_child() const
 	return best;
 }
 
-void uct_node::update_stats(const int result)
-{
-	visited++;
-
-	score += result;
-}
-
 uct_node *uct_node::get_parent()
 {
 	return parent;
@@ -183,7 +176,7 @@ void uct_node::backpropagate(uct_node *const leaf, const int result)
 	uct_node *node = leaf;
 
 	do {
-		node->update_stats(result);
+		node->update_stats(1, result);
 
 		node = node->get_parent();
 	}
@@ -223,10 +216,10 @@ uct_node *uct_node::monte_carlo_tree_search()
 	libataxx::Side side = position->turn();
 
 	int simulation_result = (score > 0 && side == libataxx::Side::Black) ||
-				(score < 0 && side == libataxx::Side::White) ? 2 : 0;
+				(score < 0 && side == libataxx::Side::White) ? 1 : 0;
 
 	if (score == 0)
-		simulation_result = 1;
+		simulation_result = 0.5;
 
 	backpropagate(leaf, simulation_result);
 
