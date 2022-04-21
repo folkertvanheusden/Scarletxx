@@ -26,7 +26,7 @@ private:
 	uct_node *pick_for_revisit();
 	uct_node *traverse();
 	uct_node *best_uct();
-	void      backpropagate(uct_node *const node, const double result);
+	void      backpropagate(uct_node *const node, double result);
 	bool      fully_expanded();
 	double    get_score();
 

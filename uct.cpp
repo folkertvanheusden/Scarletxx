@@ -192,12 +192,14 @@ uct_node *uct_node::get_parent()
 	return parent;
 }
 
-void uct_node::backpropagate(uct_node *const leaf, const double result)
+void uct_node::backpropagate(uct_node *const leaf, double result)
 {
 	uct_node *node = leaf;
 
 	do {
 		node->update_stats(result);
+
+		result = 1. - result;
 
 		node = node->get_parent();
 	}
@@ -217,7 +219,7 @@ uct_node *uct_node::monte_carlo_tree_search()
 
 	auto position = leaf->get_position();
 
-	libataxx::Side side_me = position->turn();
+	libataxx::Side side_me = this->position->turn();
 
 	int score = position->score();
 
