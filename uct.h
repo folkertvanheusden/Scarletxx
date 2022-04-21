@@ -19,7 +19,6 @@ private:
 	double                          score     { 0. };
 
 	uct_node *add_child(const libataxx::Move & m);
-	void      update_stats(const int result);
 
 	uct_node *get_parent();
 	uct_node *pick_unvisited();
