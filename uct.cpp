@@ -46,7 +46,7 @@ uct_node::uct_node(uct_node *const parent, const libataxx::Position *const posit
 				}
 			}
 
-			std::swap((*unvisited)[idx], unvisited->back());
+			std::swap((*unvisited)[i], (*unvisited)[idx]);
 		}
 	}
 }
