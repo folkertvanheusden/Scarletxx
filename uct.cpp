@@ -143,7 +143,7 @@ uct_node *uct_node::traverse()
 		node = next;
 	}
 
-	uct_node *chosen = nullptr;
+	uct_node *chosen = node;
 
 	if (node && node->get_position()->gameover() == false)
 		chosen = node->pick_unvisited();
@@ -154,10 +154,10 @@ uct_node *uct_node::traverse()
 uct_node *uct_node::best_child() const
 {
 	uct_node *best       = nullptr;
-	int64_t  best_count = -1;
+	uint64_t  best_count = 0;
 
 	for(auto u : children) {
-		int64_t count = u.second->get_visit_count();
+		uint64_t count = u.second->get_visit_count();
 
 		if (count > best_count) {
 			best_count = count;
@@ -210,8 +210,6 @@ libataxx::Position uct_node::playout(const uct_node *const leaf)
 uct_node *uct_node::monte_carlo_tree_search()
 {
 	uct_node *leaf = traverse();
-	if (!leaf)
-		return nullptr;
 
 	auto playout_terminal_position = playout(leaf);
 
@@ -228,9 +226,13 @@ uct_node *uct_node::monte_carlo_tree_search()
 	else if (result == libataxx::Result::Draw)
 		simulation_result = 0.5;
 
-	backpropagate(leaf, simulation_result);
+	backpropagate(leaf, 1. - simulation_result);
 
-	return best_child();
+	uct_node *rc = best_child();
+
+	assert(rc);
+
+	return rc;
 }
 
 const libataxx::Move uct_node::get_causing_move() const
