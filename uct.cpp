@@ -27,6 +27,28 @@ uct_node::uct_node(uct_node *const parent, const libataxx::Position *const posit
 	causing_move(causing_move),
 	unvisited(new std::vector<libataxx::Move>(position->legal_moves()))
 {
+	if (unvisited->empty()) {
+		delete unvisited;
+
+		unvisited = nullptr;
+	}
+	else {
+		for (std::size_t i = 0; i < unvisited->size() - 1; ++i) {
+			auto best_score = -1;
+			std::size_t idx = i;
+
+			for (std::size_t j = i; j < unvisited->size(); ++j) {
+				// TODO add more eval
+				const auto score = position->count_captures((*unvisited)[j]) + (*unvisited)[j].is_single();
+				if (score > best_score) {
+					best_score = score;
+					idx = j;
+				}
+			}
+
+			std::swap((*unvisited)[idx], unvisited->back());
+		}
+	}
 }
 
 uct_node::~uct_node()
@@ -207,7 +229,7 @@ libataxx::Position uct_node::playout(const uct_node *const leaf)
 	return position;
 }
 
-uct_node *uct_node::monte_carlo_tree_search()
+void uct_node::monte_carlo_tree_search()
 {
 	uct_node *leaf = traverse();
 
@@ -227,12 +249,6 @@ uct_node *uct_node::monte_carlo_tree_search()
 		simulation_result = 0.5;
 
 	backpropagate(leaf, 1. - simulation_result);
-
-	uct_node *rc = best_child();
-
-	assert(rc);
-
-	return rc;
 }
 
 const libataxx::Move uct_node::get_causing_move() const

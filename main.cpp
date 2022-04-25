@@ -51,13 +51,15 @@ libataxx::Move calculate_move(const libataxx::Position & p, const unsigned think
 	uint64_t  n_played = 0;
 
 	for(;;) {
-		uct_node *best = root->monte_carlo_tree_search();
+		root->monte_carlo_tree_search();
 
 		n_played++;
 
 		if (get_ms() - start_ts >= think_time) {
 
 			libataxx::Move move;
+
+			auto best = root->best_child();
 
 			if (best)
 				move = best->get_causing_move();
@@ -95,7 +97,7 @@ int main(int argc, char **argv)
 			continue;
 
 		if (parts.at(0) == "uai") {
-			printf("id name Scarletxx %s\n", "0.004alpha");
+			printf("id name Scarletxx %s\n", "");
 			printf("id author Folkert van Heusden\n");
 			printf("uaiok\n");
 		}

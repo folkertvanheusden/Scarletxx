@@ -33,7 +33,7 @@ public:
 	uct_node(uct_node *const parent, const libataxx::Position *const position, const libataxx::Move & causing_move);
 	virtual ~uct_node();
 
-	uct_node *monte_carlo_tree_search();
+	void      monte_carlo_tree_search();
 
 	const libataxx::Position *get_position() const;
 
