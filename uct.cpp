@@ -33,13 +33,13 @@ uct_node::uct_node(uct_node *const parent, const libataxx::Position *const posit
 		unvisited = nullptr;
 	}
 	else {
-		for (std::size_t i = 0; i < unvisited->size() - 1; ++i) {
+		for (std::size_t i = unvisited->size(); i-- > 0;) {
 			auto best_score = -1;
-			std::size_t idx = i;
+			std::size_t idx = 0;
 
-			for (std::size_t j = i; j < unvisited->size(); ++j) {
-				// TODO add more eval
+			for (std::size_t j = 0; j <= i; ++j) {
 				const auto score = position->count_captures((*unvisited)[j]) + (*unvisited)[j].is_single();
+
 				if (score > best_score) {
 					best_score = score;
 					idx = j;
