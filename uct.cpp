@@ -1,13 +1,25 @@
 // written by folkert van heusden <mail@vanheusden.com>
 // this code is public domain
+#include <algorithm>
 #include <cfloat>
 #include <random>
+#include <mutex>
 
 #include "uct.h"
 
 
-std::random_device rd;
-std::mt19937_64    gen { rd() };
+auto produce_seed()
+{
+	std::vector<unsigned int> random_data(std::mt19937::state_size);
+
+	std::random_device source;
+	std::generate(std::begin(random_data), std::end(random_data), [&](){return source();});
+
+	return std::seed_seq(std::begin(random_data), std::end(random_data));
+}
+
+thread_local auto mt_seed = produce_seed();
+thread_local std::mt19937_64 gen { mt_seed };
 
 uct_node::uct_node(uct_node *const parent, const libataxx::Position *const position, const libataxx::Move & causing_move) :
 	parent(parent),
@@ -15,11 +27,6 @@ uct_node::uct_node(uct_node *const parent, const libataxx::Position *const posit
 	causing_move(causing_move),
 	unvisited(new std::vector<libataxx::Move>(position->legal_moves()))
 {
-	if (unvisited->empty()) {
-		delete unvisited;
-
-		unvisited = nullptr;
-	}
 }
 
 uct_node::~uct_node()
@@ -56,18 +63,26 @@ uint64_t uct_node::get_visit_count()
 	return visited;
 }
 
+double uct_node::get_score_count()
+{
+	return score;
+}
+
+void uct_node::update_stats(const uint64_t visited, const double score)
+{
+	this->visited += visited;
+	this->score   += score;
+}
+
 double uct_node::get_score()
 {
-	double UCTj = 0.;
+	assert(visited);
 
-	if (visited)
-		UCTj += double(score) / visited;
+	double UCTj = score / visited;
 
-	if (parent) {
-		constexpr double sqrt_2 = sqrt(2.0);
+	constexpr double sqrt_2 = sqrt(2.0);
 
-		UCTj += sqrt_2 * sqrt(log(parent->get_visit_count()) / visited);
-	}
+	UCTj += sqrt_2 * sqrt(log(parent->get_visit_count()) / visited);
 
 	return UCTj;
 }
@@ -90,22 +105,11 @@ uct_node *uct_node::pick_unvisited()
 	return new_node;
 }
 
-uct_node *uct_node::pick_for_revisit()
-{
-	if (children.empty())
-		return nullptr;
-
-	std::uniform_int_distribution<> rng(0, children.size() - 1);
-
-	return children.at(rng(gen)).second;
-}
-
 bool uct_node::fully_expanded()
 {
 	return unvisited == nullptr;
 }
 
-// TODO
 uct_node *uct_node::best_uct()
 {
 	uct_node *best       = nullptr;
@@ -119,6 +123,9 @@ uct_node *uct_node::best_uct()
 			best = u.second;
 		}
 	}
+
+	// TODO: - move best_uct node to the front of the children-vector?
+	//       - make children a map sorted by score?
 
 	return best;
 }
@@ -138,17 +145,13 @@ uct_node *uct_node::traverse()
 
 	uct_node *chosen = nullptr;
 
-	if (node) {
+	if (node && node->get_position()->gameover() == false)
 		chosen = node->pick_unvisited();
-
-		if (!chosen)
-			chosen = node->pick_for_revisit();
-	}
 
 	return chosen;
 }
 
-uct_node *uct_node::best_child()
+uct_node *uct_node::best_child() const
 {
 	uct_node *best       = nullptr;
 	int64_t  best_count = -1;
@@ -165,27 +168,23 @@ uct_node *uct_node::best_child()
 	return best;
 }
 
-void uct_node::update_stats(const int result)
-{
-	visited++;
-
-	score += result;
-}
-
 uct_node *uct_node::get_parent()
 {
 	return parent;
 }
 
-void uct_node::backpropagate(uct_node *const leaf, const int result)
+void uct_node::backpropagate(uct_node *const leaf, double result)
 {
 	uct_node *node = leaf;
 
-	while(node) {
-		node->update_stats(result);
+	do {
+		node->update_stats(1, result);
+
+		result = 1. - result;
 
 		node = node->get_parent();
 	}
+	while(node);
 }
 
 const libataxx::Position *uct_node::get_position() const
@@ -200,13 +199,9 @@ libataxx::Position uct_node::playout(const uct_node *const leaf)
 	while(!position.gameover()) {
 		auto moves = position.legal_moves();
 
-		if (moves.empty())
-			position.makemove(libataxx::Move::nullmove());
-		else {
-			std::uniform_int_distribution<> rng(0, moves.size() - 1);
+		std::uniform_int_distribution<> rng(0, moves.size() - 1);
 
-			position.makemove(moves.at(rng(gen)));
-		}
+		position.makemove(moves.at(rng(gen)));
 	}
 
 	return position;
@@ -218,19 +213,32 @@ uct_node *uct_node::monte_carlo_tree_search()
 	if (!leaf)
 		return nullptr;
 
-	auto platout_terminal_position = playout(leaf);
+	auto playout_terminal_position = playout(leaf);
 
-	int simulation_result = (platout_terminal_position.score() > 0 && position->turn() == libataxx::Side::Black) ||
-				(platout_terminal_position.score() < 0 && position->turn() == libataxx::Side::White) ? 1 : 0;
+	libataxx::Side side = playout_terminal_position.turn();
+
+	libataxx::Result result = playout_terminal_position.result();
+
+	assert(result != libataxx::Result::None);
+
+	double simulation_result = 0.;
+
+	if ((result == libataxx::Result::BlackWin && side == libataxx::Side::Black) || (result == libataxx::Result::WhiteWin && side == libataxx::Side::White))
+		simulation_result = 1.0;
+	else if (result == libataxx::Result::Draw)
+		simulation_result = 0.5;
 
 	backpropagate(leaf, simulation_result);
 
-	uct_node *result = best_child();
-
-	return result;
+	return best_child();
 }
 
 const libataxx::Move uct_node::get_causing_move() const
 {
 	return causing_move;
+}
+
+const std::vector<std::pair<libataxx::Move, uct_node *> > & uct_node::get_children() const
+{
+	return children;
 }
