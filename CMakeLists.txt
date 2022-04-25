@@ -5,7 +5,7 @@ project(scarlettxx)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-add_compile_options(-Wall)
+add_compile_options(-Wall -pedantic)
 
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
 

@@ -24,7 +24,7 @@ private:
 	uct_node *pick_unvisited();
 	uct_node *traverse();
 	uct_node *best_uct();
-	void      backpropagate(uct_node *const node, const int result);
+	void      backpropagate(uct_node *const node, double result);
 	bool      fully_expanded();
 	double    get_score();
 	libataxx::Position playout(const uct_node *const leaf);

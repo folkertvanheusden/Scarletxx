@@ -171,12 +171,14 @@ uct_node *uct_node::get_parent()
 	return parent;
 }
 
-void uct_node::backpropagate(uct_node *const leaf, const int result)
+void uct_node::backpropagate(uct_node *const leaf, double result)
 {
 	uct_node *node = leaf;
 
 	do {
 		node->update_stats(1, result);
+
+		result = 1. - result;
 
 		node = node->get_parent();
 	}
@@ -209,23 +211,24 @@ uct_node *uct_node::monte_carlo_tree_search()
 	if (!leaf)
 		return nullptr;
 
-	auto platout_terminal_position = playout(leaf);
+	auto playout_terminal_position = playout(leaf);
 
-	int score = platout_terminal_position.score();
+	libataxx::Side side = playout_terminal_position.turn();
 
-	libataxx::Side side = position->turn();
+	libataxx::Result result = playout_terminal_position.result();
 
-	int simulation_result = (score > 0 && side == libataxx::Side::Black) ||
-				(score < 0 && side == libataxx::Side::White) ? 1 : 0;
+	assert(result != libataxx::Result::None);
 
-	if (score == 0)
+	double simulation_result = 0.;
+
+	if ((result == libataxx::Result::BlackWin && side == libataxx::Side::Black) || (result == libataxx::Result::WhiteWin && side == libataxx::Side::White))
+		simulation_result = 1.0;
+	else if (result == libataxx::Result::Draw)
 		simulation_result = 0.5;
 
 	backpropagate(leaf, simulation_result);
 
-	uct_node *result = best_child();
-
-	return result;
+	return best_child();
 }
 
 const libataxx::Move uct_node::get_causing_move() const
