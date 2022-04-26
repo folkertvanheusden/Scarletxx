@@ -215,16 +215,9 @@ uct_node *uct_node::monte_carlo_tree_search()
 {
 	uct_node *leaf = traverse();
 
-	auto position = leaf->get_position();
-
-	libataxx::Side side_me = this->position->turn();
-
-	int score = position->score();
-
-	if (position->turn() != side_me)
-		score = -score;
-
-	double simulation_result = ((score / double(7 * 7)) + 1.0) / 2.0;
+	auto sigmoid = [](const int n) -> float { return 1.0f / (1.0f + std::exp(-n)); };
+	const auto material = leaf->get_position()->us().count() - leaf->get_position()->them().count();
+	double simulation_result = 1. - sigmoid(material);
 
 	backpropagate(leaf, 1. - simulation_result);
 
