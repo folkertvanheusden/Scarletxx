@@ -21,21 +21,20 @@ auto produce_seed()
 thread_local auto mt_seed = produce_seed();
 thread_local std::mt19937_64 gen { mt_seed };
 
-uct_node::uct_node(uct_node *const parent, const libataxx::Position *const position, const libataxx::Move & causing_move) :
+uct_node::uct_node(uct_node *const parent, const libataxx::Position & position, const std::optional<libataxx::Move> & causing_move) :
 	parent(parent),
 	position(position),
-	causing_move(causing_move),
-	unvisited(new std::vector<libataxx::Move>(position->legal_moves()))
+	causing_move(causing_move)
 {
-	if (unvisited->empty()) {
-		delete unvisited;
+	if (causing_move.has_value())
+		this->position.makemove(causing_move.value());
 
-		unvisited = nullptr;
-	}
-	else {
-		std::sort(unvisited->begin(), unvisited->end(), [position](libataxx::Move & a, libataxx::Move & b) {
-				auto score_a = position->count_captures(a) + a.is_single();
-				auto score_b = position->count_captures(b) + b.is_single();
+	unvisited = this->position.legal_moves();
+
+	if (!unvisited.empty()) {
+		std::sort(unvisited.begin(), unvisited.end(), [position](libataxx::Move & a, libataxx::Move & b) {
+				auto score_a = position.count_captures(a) + a.is_single();
+				auto score_b = position.count_captures(b) + b.is_single();
 				return score_a < score_b;  // best move at end of vector
 				});
 	}
@@ -43,27 +42,13 @@ uct_node::uct_node(uct_node *const parent, const libataxx::Position *const posit
 
 uct_node::~uct_node()
 {
-	delete position;
-
 	for(auto u : children)
 		delete u.second;
-
-	delete unvisited;
 }
 
 uct_node *uct_node::add_child(const libataxx::Move & m)
 {
-	libataxx::Position *new_position = new libataxx::Position(
-			position->black(),
-			position->white(),
-			position->gaps(),
-			position->halfmoves(),
-			position->fullmoves(),
-			position->turn());
-
-	new_position->makemove(m);
-
-	uct_node *new_node = new uct_node(this, new_position, m);
+	uct_node *new_node = new uct_node(this, position, m);
 
 	children.push_back({ m, new_node });
 
@@ -101,25 +86,22 @@ double uct_node::get_score()
 
 uct_node *uct_node::pick_unvisited()
 {
-	if (unvisited == nullptr)
+	if (unvisited.empty())
 		return nullptr;
 
-	uct_node *new_node = add_child(unvisited->back());
+	uct_node *new_node = add_child(unvisited.back());
 
-	unvisited->pop_back();
+	unvisited.pop_back();
 
-	if (unvisited->empty()) {
-		delete unvisited;
-
-		unvisited = nullptr;
-	}
+	if (unvisited.empty())
+		unvisited.shrink_to_fit();
 
 	return new_node;
 }
 
 bool uct_node::fully_expanded()
 {
-	return unvisited == nullptr;
+	return unvisited.empty();
 }
 
 uct_node *uct_node::best_uct()
@@ -157,7 +139,7 @@ uct_node *uct_node::traverse()
 
 	uct_node *chosen = node;
 
-	if (node && node->get_position()->gameover() == false)
+	if (node && node->get_position().gameover() == false)
 		chosen = node->pick_unvisited();
 
 	return chosen;
@@ -199,14 +181,14 @@ void uct_node::backpropagate(uct_node *const leaf, double result)
 	while(node);
 }
 
-const libataxx::Position *uct_node::get_position() const
+const libataxx::Position uct_node::get_position() const
 {
 	return position;
 }
 
 libataxx::Position uct_node::playout(const uct_node *const leaf)
 {
-	libataxx::Position position = *leaf->get_position();
+	libataxx::Position position = leaf->get_position();
 
 	while(!position.gameover()) {
 		auto moves = position.legal_moves();
@@ -243,7 +225,7 @@ void uct_node::monte_carlo_tree_search()
 
 const libataxx::Move uct_node::get_causing_move() const
 {
-	return causing_move;
+	return causing_move.value();
 }
 
 const std::vector<std::pair<libataxx::Move, uct_node *> > & uct_node::get_children() const

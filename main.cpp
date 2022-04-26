@@ -44,7 +44,7 @@ std::vector<std::string> split(const std::string & in_in, const std::string & sp
 
 libataxx::Move calculate_move(const libataxx::Position & p, const unsigned think_time)
 {
-	uct_node *root     = new uct_node(nullptr, new libataxx::Position(p), libataxx::Move());
+	uct_node *root     = new uct_node(nullptr, p, { });
 
 	uint64_t  start_ts = get_ms();
 

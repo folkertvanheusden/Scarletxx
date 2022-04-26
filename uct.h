@@ -1,6 +1,7 @@
 // written by folkert van heusden <mail@vanheusden.com>
 // this code is public domain
 #include <map>
+#include <optional>
 #include <shared_mutex>
 
 #include "libataxx/src/libataxx/position.hpp"
@@ -10,11 +11,11 @@ class uct_node
 {
 private:
 	uct_node                 *const parent    { nullptr };
-	const libataxx::Position *const position  { nullptr };
-	const libataxx::Move            causing_move;
+	libataxx::Position              position;
+	const std::optional<libataxx::Move> causing_move;
 
 	std::vector<std::pair<libataxx::Move, uct_node *> > children;
-	std::vector<libataxx::Move>    *unvisited { nullptr };
+	std::vector<libataxx::Move>     unvisited;
 	uint64_t                        visited   { 0 };
 	double                          score     { 0. };
 
@@ -30,12 +31,12 @@ private:
 	libataxx::Position playout(const uct_node *const leaf);
 
 public:
-	uct_node(uct_node *const parent, const libataxx::Position *const position, const libataxx::Move & causing_move);
+	uct_node(uct_node *const parent, const libataxx::Position & position, const std::optional<libataxx::Move> & causing_move);
 	virtual ~uct_node();
 
 	void      monte_carlo_tree_search();
 
-	const libataxx::Position *get_position() const;
+	const libataxx::Position get_position() const;
 
 	uct_node *best_child() const;
 
