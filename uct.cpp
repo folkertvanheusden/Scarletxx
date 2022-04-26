@@ -33,21 +33,11 @@ uct_node::uct_node(uct_node *const parent, const libataxx::Position *const posit
 		unvisited = nullptr;
 	}
 	else {
-		for (std::size_t i = unvisited->size(); i-- > 0;) {
-			auto best_score = -1;
-			std::size_t idx = 0;
-
-			for (std::size_t j = 0; j <= i; ++j) {
-				const auto score = position->count_captures((*unvisited)[j]) + (*unvisited)[j].is_single();
-
-				if (score > best_score) {
-					best_score = score;
-					idx = j;
-				}
-			}
-
-			std::swap((*unvisited)[i], (*unvisited)[idx]);
-		}
+		std::sort(unvisited->begin(), unvisited->end(), [position](libataxx::Move & a, libataxx::Move & b) {
+				auto score_a = position->count_captures(a) + a.is_single();
+				auto score_b = position->count_captures(b) + b.is_single();
+				return score_a < score_b;  // best move at end of vector
+				});
 	}
 }
 
