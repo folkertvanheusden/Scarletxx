@@ -159,7 +159,7 @@ int main(int argc, char **argv)
 			continue;
 
 		if (parts.at(0) == "uai") {
-			printf("id name Scarletxx %s\n", "781020d");
+			printf("id name Scarletxx %s\n", "4276e56-no-playout-sigmoid");
 			printf("id author Folkert van Heusden\n");
 			printf("uaiok\n");
 		}

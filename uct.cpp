@@ -217,7 +217,7 @@ uct_node *uct_node::monte_carlo_tree_search()
 
 	auto sigmoid = [](const int n) -> float { return 1.0f / (1.0f + std::exp(-n)); };
 	const auto material = leaf->get_position()->us().count() - leaf->get_position()->them().count();
-	double simulation_result = 1. - sigmoid(material);
+	double simulation_result = sigmoid(material);
 
 	backpropagate(leaf, 1. - simulation_result);
 
