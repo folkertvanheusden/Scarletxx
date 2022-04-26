@@ -33,21 +33,17 @@ uct_node::uct_node(uct_node *const parent, const libataxx::Position *const posit
 		unvisited = nullptr;
 	}
 	else {
-		for (std::size_t i = 0; i < unvisited->size() - 1; ++i) {
-			auto best_score = -1;
-			std::size_t idx = i;
-
-			for (std::size_t j = i; j < unvisited->size(); ++j) {
-				// TODO add more eval
-				const auto score = position->count_captures((*unvisited)[j]) + (*unvisited)[j].is_single();
-				if (score > best_score) {
-					best_score = score;
-					idx = j;
-				}
-			}
-
-			std::swap((*unvisited)[i], (*unvisited)[idx]);
+		std::sort(unvisited->begin(), unvisited->end(), [position](libataxx::Move & a, libataxx::Move & b) {
+				auto score_a = position->count_captures(a) + a.is_single();
+				auto score_b = position->count_captures(b) + b.is_single();
+				return score_a < score_b;
+				});
+#if 0
+		if (unvisited->size() >= 2) {
+			printf("%d %d\n", position->count_captures((*unvisited)[0]) + (*unvisited)[0].is_single(),
+					position->count_captures((*unvisited)[unvisited->size() - 1]) + (*unvisited)[unvisited->size() - 1].is_single());
 		}
+#endif
 	}
 }
 
