@@ -148,7 +148,7 @@ int main(int argc, char **argv)
 			}
 		}
 		else if (parts.at(0) == "go") {
-			int moves_to_go = 40 - pos.halfmoves() / 2;
+			int moves_to_go = 40 - pos.get_halfmoves() / 2;
 			int w_time = 0, b_time = 0, w_inc = 0, b_inc = 0;
 			bool time_set = false;
 
@@ -171,13 +171,13 @@ int main(int argc, char **argv)
 
 			int think_time = 0;
 			if (time_set)
-				think_time = (pos.turn() == libataxx::Side::White ? w_time : b_time) * 0.95;
+				think_time = (pos.get_turn() == libataxx::Side::White ? w_time : b_time) * 0.95;
 			else {
 				int cur_n_moves = moves_to_go <= 0 ? 40 : moves_to_go;
 
-				int time_inc = pos.turn() == libataxx::Side::White ? w_inc : b_inc;
+				int time_inc = pos.get_turn() == libataxx::Side::White ? w_inc : b_inc;
 
-				int ms = pos.turn() == libataxx::Side::White ? w_time : b_time;
+				int ms = pos.get_turn() == libataxx::Side::White ? w_time : b_time;
 				think_time = (ms + (cur_n_moves - 1) * time_inc) / double(cur_n_moves + 7);
 
 				int limit_duration_min = ms / 15;

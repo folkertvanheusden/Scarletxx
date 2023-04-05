@@ -11,7 +11,7 @@ set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
 
 set(CMAKE_BUILD_TYPE Debug)
 
-link_directories(scarlettxx ${CMAKE_SOURCE_DIR}/libataxx/build/shared)
+link_directories(scarlettxx ${CMAKE_SOURCE_DIR}/libataxx/build/src)
 
 add_executable(
   scarlettxx
@@ -20,4 +20,4 @@ add_executable(
   uct.cpp
 )
 
-target_link_libraries(scarlettxx ataxx)
+target_link_libraries(scarlettxx ataxx_shared)

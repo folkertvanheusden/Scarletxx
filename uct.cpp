@@ -139,7 +139,7 @@ uct_node *uct_node::traverse()
 
 	uct_node *chosen = node;
 
-	if (node && node->get_position().gameover() == false)
+	if (node && node->get_position().is_gameover() == false)
 		chosen = node->pick_unvisited();
 
 	return chosen;
@@ -190,7 +190,7 @@ libataxx::Position uct_node::playout(const uct_node *const leaf)
 {
 	libataxx::Position position = leaf->get_position();
 
-	while(!position.gameover()) {
+	while(!position.is_gameover()) {
 		auto moves = position.legal_moves();
 
 		std::uniform_int_distribution<> rng(0, moves.size() - 1);
@@ -207,18 +207,20 @@ void uct_node::monte_carlo_tree_search()
 
 	auto playout_terminal_position = playout(leaf);
 
-	libataxx::Side side = playout_terminal_position.turn();
+	libataxx::Side side = playout_terminal_position.get_turn();
 
-	libataxx::Result result = playout_terminal_position.result();
+	libataxx::Result result = playout_terminal_position.get_result();
 
 	assert(result != libataxx::Result::None);
 
 	double simulation_result = 0.;
 
-	if ((result == libataxx::Result::BlackWin && side == libataxx::Side::Black) || (result == libataxx::Result::WhiteWin && side == libataxx::Side::White))
+	if ((result == libataxx::Result::BlackWin && side == libataxx::Side::White) || (result == libataxx::Result::WhiteWin && side == libataxx::Side::Black))
 		simulation_result = 1.0;
 	else if (result == libataxx::Result::Draw)
 		simulation_result = 0.5;
+	else
+		printf("%d %d\n", side, result);
 
 	backpropagate(leaf, 1. - simulation_result);
 }
