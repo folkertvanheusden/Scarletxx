@@ -215,12 +215,10 @@ void uct_node::monte_carlo_tree_search()
 
 	double simulation_result = 0.;
 
-	if ((result == libataxx::Result::BlackWin && side == libataxx::Side::White) || (result == libataxx::Result::WhiteWin && side == libataxx::Side::Black))
+	if ((result == libataxx::Result::BlackWin && side == libataxx::Side::Black) || (result == libataxx::Result::WhiteWin && side == libataxx::Side::White))
 		simulation_result = 1.0;
 	else if (result == libataxx::Result::Draw)
 		simulation_result = 0.5;
-	else
-		printf("%d %d\n", side, result);
 
 	backpropagate(leaf, 1. - simulation_result);
 }
