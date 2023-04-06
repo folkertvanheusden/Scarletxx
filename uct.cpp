@@ -207,7 +207,7 @@ void uct_node::monte_carlo_tree_search()
 
 	auto playout_terminal_position = playout(leaf);
 
-	libataxx::Side side = playout_terminal_position.get_turn();
+	libataxx::Side side = !playout_terminal_position.get_turn();
 
 	libataxx::Result result = playout_terminal_position.get_result();
 
